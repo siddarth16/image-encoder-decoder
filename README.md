@@ -1,6 +1,6 @@
 # Encrypted Image-to-Text Converter
 
-A pure server-executed web application that performs **lossless, key-protected round-trip** conversion between image files and encrypted ASCII text artifacts.
+A pure server-executed web application that performs **lossless, key-protected round-trip** conversion between image files and encrypted ASCII text artifacts
 
 ## Features
 

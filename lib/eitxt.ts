@@ -1,7 +1,5 @@
 import { base64UrlEncode, base64UrlDecode, EncryptChunk, KDFParams } from './crypto';
 import { createGzip, createGunzip } from 'zlib';
-import { pipeline } from 'stream/promises';
-import { PassThrough } from 'stream';
 
 export interface EITXTPayload {
   mime: string;
@@ -81,35 +79,34 @@ export function createAAD(payload: EITXTPayload): Buffer {
  * Compress a buffer using gzip
  */
 export async function compressBuffer(data: Buffer): Promise<Buffer> {
-  const chunks: Buffer[] = [];
-  const passThrough = new PassThrough();
-  const gzip = createGzip({ level: 6 });
+  return new Promise((resolve, reject) => {
+    const chunks: Buffer[] = [];
+    const gzip = createGzip({ level: 6 });
 
-  gzip.on('data', (chunk) => chunks.push(chunk));
+    gzip.on('data', (chunk: Buffer) => chunks.push(chunk));
+    gzip.on('end', () => resolve(Buffer.concat(chunks)));
+    gzip.on('error', reject);
 
-  await pipeline(passThrough, gzip);
-  passThrough.end(data);
-
-  return Buffer.concat(chunks);
+    gzip.write(data);
+    gzip.end();
+  });
 }
 
 /**
  * Decompress a buffer using gzip
  */
 export async function decompressBuffer(data: Buffer): Promise<Buffer> {
-  const chunks: Buffer[] = [];
-  const passThrough = new PassThrough();
-  const gunzip = createGunzip();
+  return new Promise((resolve, reject) => {
+    const chunks: Buffer[] = [];
+    const gunzip = createGunzip();
 
-  gunzip.on('data', (chunk) => chunks.push(chunk));
+    gunzip.on('data', (chunk: Buffer) => chunks.push(chunk));
+    gunzip.on('end', () => resolve(Buffer.concat(chunks)));
+    gunzip.on('error', () => reject(new Error('Wrong key or corrupted data')));
 
-  try {
-    await pipeline(passThrough, gunzip);
-    passThrough.end(data);
-    return Buffer.concat(chunks);
-  } catch (error) {
-    throw new Error('Wrong key or corrupted data');
-  }
+    gunzip.write(data);
+    gunzip.end();
+  });
 }
 
 /**

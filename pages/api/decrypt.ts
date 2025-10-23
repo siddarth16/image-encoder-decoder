@@ -91,7 +91,7 @@ export default async function handler(
     // Decompress if needed
     if (eitxt.payload.compression === 'gzip') {
       try {
-        decryptedBuffer = await decompressBuffer(decryptedBuffer);
+        decryptedBuffer = Buffer.from(await decompressBuffer(decryptedBuffer));
       } catch (error) {
         return res.status(400).json({ error: 'Wrong key or corrupted data' });
       }

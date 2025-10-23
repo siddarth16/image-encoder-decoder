@@ -102,7 +102,7 @@ export default async function handler(
 
     if (options.compression === 'gzip') {
       try {
-        processedBuffer = await compressBuffer(fileBuffer);
+        processedBuffer = Buffer.from(await compressBuffer(fileBuffer));
         compression = 'gzip';
       } catch (error) {
         // Fall back to no compression
